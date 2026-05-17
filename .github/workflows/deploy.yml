@@ -37,4 +37,9 @@ jobs:
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest
             docker stop casino-frontend || true
             docker rm casino-frontend || true
-            docker run -d --name casino-frontend -p 80:8080 -e BACKEND_HOST=${{ secrets.EC2_BACKEND_HOST }} ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest
+            docker run -d \
+              --name casino-frontend \
+              -p 80:8080 \
+              -e EC2_BACKEND_HOST="${{ secrets.EC2_BACKEND_HOST }}" \
+              -e NGINX_ENVSUBST_FILTER="EC2_BACKEND_HOST" \
+              ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest
