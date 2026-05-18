@@ -5,39 +5,25 @@ on:
     branches: [deploy]
 
 jobs:
-  build:
+  pipeline-completo:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Build images
-        run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest .
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:v1.0.0 .
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:${{ github.sha }} .
+      - name: Build Image (Etapa 1)
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest .
 
-  push:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: Docker Hub Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push images
-        run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:v1.0.0
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:${{ github.sha }}
+      - name: Push Image (Etapa 2)
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/vidal-frontend:latest
 
-  deploy:
-    needs: push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to AWS EC2
+      - name: Deploy to AWS EC2 (Etapa 3)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_FRONTEND_HOST }}
